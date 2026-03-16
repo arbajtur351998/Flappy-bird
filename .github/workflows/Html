@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Shooter</title>
+<style>
+body{
+margin:0;
+overflow:hidden;
+background:black;
+}
+canvas{
+display:block;
+}
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<script>
+
+let canvas = document.getElementById("game");
+let ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let ship = {
+x: canvas.width/2 - 25,
+y: canvas.height - 80,
+width:50,
+height:50
+};
+
+let bullets=[];
+let enemies=[];
+
+let touchStartX = null;
+
+document.addEventListener("touchstart",e=>{
+touchStartX = e.touches[0].clientX;
+});
+
+document.addEventListener("touchmove",e=>{
+let moveX = e.touches[0].clientX;
+
+if(moveX > touchStartX){
+ship.x += 10;
+}else{
+ship.x -= 10;
+}
+
+touchStartX = moveX;
+});
+
+function shoot(){
+bullets.push({
+x: ship.x + ship.width/2,
+y: ship.y
+});
+}
+
+setInterval(shoot,400);
+
+function spawnEnemy(){
+enemies.push({
+x: Math.random()*(canvas.width-40),
+y:-40,
+size:40
+});
+}
+
+setInterval(spawnEnemy,1000);
+
+function update(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+ctx.fillStyle="white";
+ctx.fillRect(ship.x,ship.y,ship.width,ship.height);
+
+for(let i=0;i<bullets.length;i++){
+let b=bullets[i];
+b.y-=10;
+
+ctx.fillStyle="yellow";
+ctx.fillRect(b.x,b.y,5,10);
+}
+
+for(let i=0;i<enemies.length;i++){
+let e=enemies[i];
+e.y+=3;
+
+ctx.fillStyle="red";
+ctx.fillRect(e.x,e.y,e.size,e.size);
+
+for(let j=0;j<bullets.length;j++){
+let b=bullets[j];
+
+if(b.x>e.x && b.x<e.x+e.size &&
+b.y>e.y && b.y<e.y+e.size){
+
+enemies.splice(i,1);
+bullets.splice(j,1);
+}
+}
+}
+
+requestAnimationFrame(update);
+}
+
+update();
+
+</script>
+</body>
+</html>
