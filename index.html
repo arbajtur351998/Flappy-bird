@@ -1,0 +1,106 @@
+HTML
+Copy code
+<!DOCTYPE html>
+<html>
+<head>
+<title>Fluppy Bird</title>
+<style>
+  body { margin: 0; overflow: hidden; background: skyblue; }
+  canvas { display: block; margin: auto; background: lightblue; }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+
+<script>
+let canvas = document.getElementById("gameCanvas");
+let ctx = canvas.getContext("2d");
+
+let bird = { x: 50, y: 200, size: 20, gravity: 0.5, lift: -8, velocity: 0 };
+let pipes = [];
+let frame = 0;
+let score = 0;
+
+document.addEventListener("click", () => {
+  bird.velocity = bird.lift;
+});
+
+function drawBird() {
+  ctx.fillStyle = "yellow";
+  ctx.beginPath();
+  ctx.arc(bird.x, bird.y, bird.size, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawPipes() {
+  ctx.fillStyle = "green";
+  pipes.forEach(p => {
+    ctx.fillRect(p.x, 0, 40, p.top);
+    ctx.fillRect(p.x, p.bottom, 40, canvas.height);
+  });
+}
+
+function updatePipes() {
+  if (frame % 90 === 0) {
+    let top = Math.random() * 300;
+    let gap = 130;
+    pipes.push({
+      x: canvas.width,
+      top: top,
+      bottom: top + gap
+    });
+  }
+
+  pipes.forEach(p => p.x -= 2);
+
+  pipes = pipes.filter(p => p.x > -40);
+}
+
+function checkCollision() {
+  for (let p of pipes) {
+    if (
+      bird.x + bird.size > p.x &&
+      bird.x - bird.size < p.x + 40 &&
+      (bird.y - bird.size < p.top || bird.y + bird.size > p.bottom)
+    ) {
+      alert("Game Over! Score: " + score);
+      document.location.reload();
+    }
+  }
+
+  if (bird.y > canvas.height || bird.y < 0) {
+    alert("Game Over! Score: " + score);
+    document.location.reload();
+  }
+}
+
+function drawScore() {
+  ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
+  ctx.fillText("Fluppy Bird Score: " + score, 10, 30);
+}
+
+function update() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  bird.velocity += bird.gravity;
+  bird.y += bird.velocity;
+
+  drawBird();
+  updatePipes();
+  drawPipes();
+  checkCollision();
+  drawScore();
+
+  frame++;
+  if (frame % 90 === 0) score++;
+
+  requestAnimationFrame(update);
+}
+
+update();
+</script>
+
+</body>
+</html>
